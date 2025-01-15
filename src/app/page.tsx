@@ -90,12 +90,12 @@ const WalletConnect = () => {
     }
   }
 
-  // 连接钱包
+  // connect wallet
   const connectWallet = async () => {
     try {
       if (!checkIfWalletIsInstalled()) return;
 
-      // 请求用户连接钱包
+      // request user to connect wallet
       const web3 = new Web3(window.ethereum);
 
 
@@ -115,11 +115,11 @@ const WalletConnect = () => {
     }
   };
 
-  // 监听账户变化
+  // listen to account changes
   const listenToAccountChanges = () => {
     if (!checkIfWalletIsInstalled()) return;
 
-    window.ethereum.on('accountsChanged', async (accounts) => {
+    window.ethereum.on('accountsChanged', async (accounts: any) => {
       if (accounts.length > 0) {
         const web3 = new Web3(window.ethereum);
         const balance = await web3.eth.getBalance(accounts[0]);
@@ -127,7 +127,7 @@ const WalletConnect = () => {
         setBalance(web3.utils.toWei(balance, 'ether'));
 
       } else {
-        // 用户断开了所有账户
+        // user disconnected all accounts
         setAccount('');
         setBalance('');
       }
@@ -140,7 +140,7 @@ const WalletConnect = () => {
 
     window.ethereum.on('chainChanged', (chainId: string) => {
       setChainId(parseInt(chainId).toString());
-      // 建议在链变化时刷新页面
+      // recommend to refresh page when chain changed
       window.location.reload();
     });
   };
@@ -164,20 +164,20 @@ const WalletConnect = () => {
 
       const from = accounts[0];
 
-      // 将 ETH 转换为 Wei
+      // convert ETH to Wei
       const value = web3.utils.toWei(amount, 'ether');
 
-      // 获取 gas 价格
+      // get gas price
       const gasPrice = await web3.eth.getGasPrice();
 
-      // 估算 gas
+      // estimate gas
       const gasEstimate = await web3.eth.estimateGas({
         from,
         to,
         value
       });
 
-      // 构建交易对象
+      // build transaction
       const tx = {
         from,
         to,
@@ -186,7 +186,7 @@ const WalletConnect = () => {
         gasPrice
       };
 
-      // 发送交易
+      // send transaction
       const receipt = await web3.eth.sendTransaction(tx);
 
       return {
@@ -214,10 +214,10 @@ const WalletConnect = () => {
       const accounts = await web3.eth.getAccounts();
       const from = accounts[0];
 
-      // 将消息转换为十六进制
+      // convert message to hex
       const messageHex = web3.utils.utf8ToHex(message);
 
-      // 签名消息
+      // sign message
       const signature = await web3.eth.personal.sign(
         messageHex,
         from,
@@ -244,7 +244,7 @@ const WalletConnect = () => {
       {error && <div style={{ color: 'red' }}>{error}</div>}
 
       {!account ? (
-        <button onClick={connectWallet}>连接钱包</button>
+        <button onClick={connectWallet}>Connect Wallet</button>
       ) : (
         <div>
           <p>Address：{account}</p>
