@@ -11,6 +11,27 @@ const WalletConnect = () => {
   const [selectedNetwork, setSelectedNetwork] = useState('');
   const [message, setMessage] = useState('');
   const [signature, setSignature] = useState('');
+  const [flowWalletProvider, setFlowWalletProvider] = useState(null)
+
+  const setupEventListeners = () => {
+    // 监听钱包公告事件
+    window.addEventListener(
+      'eip6963:announceProvider',
+      ((event: CustomEvent) => {
+        const { info, provider } = event.detail;
+        console.log('Wallet announced:', info.name);
+        if (info.rdns == 'com.flowfoundation.wallet') {
+          setFlowWalletProvider(provider)
+        }
+
+      }) as EventListener
+    );
+  }
+
+
+  useEffect(() => {
+    setupEventListeners()
+  }, [])
 
 
 
@@ -55,7 +76,7 @@ const WalletConnect = () => {
       // 先尝试切换到该网络
       try {
         //@ts-ignore
-        await window.ethereum.request({
+        await flowWalletProvider.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: chainIdHex }],
         });
@@ -64,7 +85,7 @@ const WalletConnect = () => {
         // 如果网络不存在（错误代码 4902），则添加网络
         if (switchError.code === 4902) {
           //@ts-ignore
-          await window.ethereum.request({
+          await flowWalletProvider.request({
             method: 'wallet_addEthereumChain',
             params: [{
               chainId: chainIdHex,
@@ -89,10 +110,10 @@ const WalletConnect = () => {
     try {
 
       //@ts-ignore
-      const web3 = new Web3(window.ethereum);
+      const web3 = new Web3(flowWalletProvider);
 
       //@ts-ignore
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      await flowWalletProvider.request({ method: 'eth_requestAccounts' });
       const accounts = await web3.eth.getAccounts();
 
       const chainId = await web3.eth.getChainId();
@@ -114,7 +135,7 @@ const WalletConnect = () => {
   const sendTransaction = async (to: string, amount: string) => {
     try {
       //@ts-ignore
-      const web3 = new Web3(window.ethereum);
+      const web3 = new Web3(flowWalletProvider);
       const accounts = await web3.eth.getAccounts();
 
       const from = accounts[0];
@@ -162,7 +183,7 @@ const WalletConnect = () => {
   const signMessage = async (message: string) => {
     try {
       //@ts-ignore
-      const web3 = new Web3(window.ethereum);
+      const web3 = new Web3(flowWalletProvider);
       const accounts = await web3.eth.getAccounts();
       const from = accounts[0];
 
